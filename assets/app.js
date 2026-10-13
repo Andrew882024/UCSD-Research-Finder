@@ -47,7 +47,7 @@ const METRIC_STOPWORDS = new Set([
 
 const DEFAULT_FILTERS = {
   query: "",
-  type: "all",
+  type: "lab",
   department: "all",
   savedOnly: false,
   sort: "relevance",
@@ -79,6 +79,7 @@ const DEPARTMENT_FIELDS = {
     "Cellular & Molecular Medicine",
     "Neurosciences",
     "Pharmacology",
+    "Bioengineering",
   ],
   Chemistry: ["Chemistry & Biochemistry", "Pharmacy and Pharmaceutical Sciences"],
   "Physics & Astronomy": ["Physics", "Astronomy and Astrophysics"],
@@ -88,7 +89,6 @@ const DEPARTMENT_FIELDS = {
     "Electrical and Computer Engineering",
     "Mechanical & Aerospace Engineering",
     "NanoEngineering",
-    "Bioengineering",
     "Structural Engineering",
   ],
   "Medicine & Health": [
@@ -817,7 +817,7 @@ function readUrl() {
     const value = params.get(param);
     state[key] = typeof DEFAULT_FILTERS[key] === "boolean" ? value === "1" : value;
   }
-  if (!["all", ...TYPE_KEYS].includes(state.type)) state.type = "all";
+  if (!["all", ...TYPE_KEYS].includes(state.type)) state.type = DEFAULT_FILTERS.type;
   if (!SORTERS[state.sort]) state.sort = "relevance";
   if (params.has("id")) {
     state.activeId = params.get("id");

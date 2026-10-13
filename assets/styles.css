@@ -643,29 +643,54 @@ svg {
   transform: rotate(45deg);
 }
 
-.quick-filters {
+.type-list {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  flex-direction: column;
 }
 
-.quick-filters button {
-  height: 32px;
-  padding: 0 11px;
-  border: 1px solid var(--line);
-  font-size: 13px;
+.type-list button {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0 7px 12px;
+  color: var(--muted);
+  font-size: 14px;
   font-weight: 600;
-  transition: border-color 140ms, background-color 140ms, color 140ms;
+  text-align: left;
+  transition: color 140ms;
 }
 
-.quick-filters button:hover {
-  border-color: var(--ink);
+.type-list button span {
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
-.quick-filters button[aria-pressed="true"] {
-  border-color: var(--ink);
+.type-list button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
   background: var(--ink);
-  color: var(--paper);
+  transform: scaleY(0);
+  transition: transform 240ms var(--ease);
+}
+
+.type-list button:hover,
+.type-list button[aria-pressed="true"] {
+  color: var(--ink);
+}
+
+.type-list button[aria-pressed="true"]::before {
+  transform: scaleY(1);
+}
+
+.type-list button.is-empty {
+  color: var(--faint);
 }
 
 .filter-group .check {
@@ -768,66 +793,10 @@ svg {
 
 .results-tools {
   display: flex;
-  align-items: stretch;
-  justify-content: space-between;
-  gap: 16px;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 7px 0;
   border-bottom: 1px solid var(--hair);
-}
-
-.type-tabs {
-  display: flex;
-  gap: clamp(14px, 2vw, 28px);
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-.type-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-.type-tabs button {
-  position: relative;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  padding: 14px 0 12px;
-  color: var(--muted);
-  font-size: 15px;
-  font-weight: 600;
-  white-space: nowrap;
-  transition: color 140ms;
-}
-
-.type-tabs button span {
-  font-size: 12px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
-
-.type-tabs button::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 3px;
-  background: var(--ink);
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform 240ms var(--ease);
-}
-
-.type-tabs button:hover,
-.type-tabs button[aria-pressed="true"] {
-  color: var(--ink);
-}
-
-.type-tabs button[aria-pressed="true"]::after {
-  transform: scaleX(1);
-}
-
-.type-tabs button.is-empty {
-  color: var(--faint);
 }
 
 .sort-field {
@@ -1936,6 +1905,10 @@ svg {
     display: none;
   }
 
+  .results-tools {
+    justify-content: flex-start;
+  }
+
   .colophon {
     grid-template-columns: 1fr;
   }
@@ -2004,16 +1977,6 @@ svg {
   .results-count {
     white-space: normal;
     text-align: left;
-  }
-
-  .results-tools {
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .sort-field {
-    padding: 8px 0;
-    border-top: 1px solid var(--hair);
   }
 
   .row {

@@ -96,11 +96,12 @@
 
         <div class="rail-body">
           <fieldset class="filter-group">
-            <legend>Quick filters</legend>
-            <div class="quick-filters">
-              <button type="button" data-quick="checked" aria-pressed="false">Source checked</button>
-              <button type="button" data-quick="courses" aria-pressed="false">With courses</button>
-              <button type="button" data-quick="ratings" aria-pressed="false">With ratings</button>
+            <legend>Record type</legend>
+            <div class="type-list">
+              <button type="button" data-type-choice="all" aria-pressed="true">All <span data-count="all">0</span></button>
+              <button type="button" data-type-choice="professor" aria-pressed="false">Professors <span data-count="professor">0</span></button>
+              <button type="button" data-type-choice="lab" aria-pressed="false">Labs <span data-count="lab">0</span></button>
+              <button type="button" data-type-choice="resource" aria-pressed="false">REAL <span data-count="resource">0</span></button>
             </div>
           </fieldset>
 
@@ -165,12 +166,6 @@
         </div>
 
         <div class="results-tools">
-          <div class="type-tabs" role="group" aria-label="Record type">
-            <button type="button" data-type-choice="all" aria-pressed="true">All <span data-count="all">0</span></button>
-            <button type="button" data-type-choice="professor" aria-pressed="false">Professors <span data-count="professor">0</span></button>
-            <button type="button" data-type-choice="lab" aria-pressed="false">Labs <span data-count="lab">0</span></button>
-            <button type="button" data-type-choice="resource" aria-pressed="false">REAL <span data-count="resource">0</span></button>
-          </div>
           <label class="sort-field">
             <span>Sort</span>
             <select id="sortFilter">

@@ -109,7 +109,6 @@ const els = {
   query: document.querySelector("#query"),
   typeButtons: [...document.querySelectorAll("[data-type-choice]")],
   typeCounts: [...document.querySelectorAll("[data-count]")],
-  quickButtons: [...document.querySelectorAll("[data-quick]")],
   department: document.querySelector("#departmentFilter"),
   area: document.querySelector("#areaFilter"),
   evidence: document.querySelector("#evidenceFilter"),
@@ -839,11 +838,6 @@ function syncControls() {
     select.classList.toggle("is-set", select.value !== "all");
   }
   els.savedToggle.setAttribute("aria-pressed", String(state.savedOnly));
-  els.quickButtons.forEach((button) => {
-    const key = button.dataset.quick;
-    const active = key === "checked" ? state.verifiedOnly : state.evidence === key;
-    button.setAttribute("aria-pressed", String(active));
-  });
 }
 
 function activeFilterEntries() {
@@ -894,13 +888,6 @@ function clearFilter(key) {
     return;
   }
   state[key] = DEFAULT_FILTERS[key];
-  syncControls();
-  update({ scroll: true });
-}
-
-function applyQuickFilter(key) {
-  if (key === "checked") state.verifiedOnly = !state.verifiedOnly;
-  else state.evidence = state.evidence === key ? "all" : key;
   syncControls();
   update({ scroll: true });
 }
@@ -1802,10 +1789,6 @@ function bindEvents() {
       state.type = button.dataset.typeChoice || "all";
       update({ scroll: true });
     });
-  });
-
-  els.quickButtons.forEach((button) => {
-    button.addEventListener("click", () => applyQuickFilter(button.dataset.quick));
   });
 
   els.activeFilters.addEventListener("click", (event) => {

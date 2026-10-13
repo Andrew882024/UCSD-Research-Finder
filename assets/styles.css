@@ -605,44 +605,6 @@ svg {
   font-weight: 600;
 }
 
-.check {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 5px 0;
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.check input {
-  position: relative;
-  flex: none;
-  width: 18px;
-  height: 18px;
-  margin: 1px 0 0;
-  border: 1.5px solid var(--ink);
-  border-radius: 0;
-  background: var(--paper);
-  appearance: none;
-  cursor: pointer;
-}
-
-.check input:checked {
-  background: var(--ink);
-}
-
-.check input:checked::after {
-  content: "";
-  position: absolute;
-  left: 5px;
-  top: 1px;
-  width: 5px;
-  height: 10px;
-  border: solid var(--paper);
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
-}
-
 .type-list {
   display: flex;
   flex-direction: column;
@@ -691,10 +653,6 @@ svg {
 
 .type-list button.is-empty {
   color: var(--faint);
-}
-
-.filter-group .check {
-  margin-top: 10px;
 }
 
 .saved {

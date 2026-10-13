@@ -50,9 +50,6 @@ const DEFAULT_FILTERS = {
   type: "all",
   department: "all",
   area: "all",
-  recruiting: "all",
-  evidence: "all",
-  verifiedOnly: false,
   savedOnly: false,
   sort: "relevance",
 };
@@ -63,21 +60,11 @@ const URL_KEYS = {
   type: "type",
   department: "dept",
   area: "area",
-  recruiting: "status",
-  evidence: "evidence",
-  verifiedOnly: "checked",
   savedOnly: "saved",
   sort: "sort",
 };
 
 const TYPE_KEYS = ["professor", "lab", "resource"];
-const EVIDENCE_LABELS = {
-  courses: "Official teaching records",
-  ratings: "Any published rating",
-  rateMyPI: "PI Review score",
-  rateMyProfessors: "Rate My Professors score",
-  needs_review: "Needs verification",
-};
 const RATING_PLATFORMS = [
   ["rateMyPI", "PI Review", "Mentoring opinions"],
   ["rateMyProfessors", "Rate My Professors", "Teaching opinions"],
@@ -111,9 +98,6 @@ const els = {
   typeCounts: [...document.querySelectorAll("[data-count]")],
   department: document.querySelector("#departmentFilter"),
   area: document.querySelector("#areaFilter"),
-  evidence: document.querySelector("#evidenceFilter"),
-  verifiedOnly: document.querySelector("#verifiedOnly"),
-  recruiting: document.querySelector("#recruitingFilter"),
   sort: document.querySelector("#sortFilter"),
   clear: document.querySelector("#clearFilters"),
   filtersButton: document.querySelector("#filtersButton"),
@@ -679,12 +663,6 @@ function matchesFilters(record, indexed, terms) {
   if (state.savedOnly && !state.saved.has(record.id)) return false;
   if (state.department !== "all" && !record.departments.includes(state.department)) return false;
   if (state.area !== "all" && !record.researchAreas.includes(state.area)) return false;
-  if (state.recruiting !== "all" && (record.recruitingStatus || UNKNOWN) !== state.recruiting) return false;
-  if (state.verifiedOnly && !facts.checked) return false;
-  if (state.evidence === "courses" && !facts.courses) return false;
-  if (state.evidence === "ratings" && !facts.ratings.length) return false;
-  if (["rateMyPI", "rateMyProfessors"].includes(state.evidence) && !facts.ratings.includes(state.evidence)) return false;
-  if (state.evidence === "needs_review" && facts.checked && !facts.needsReview) return false;
   if (terms.length && !terms.every((term) => indexed.haystack.includes(term))) return false;
   return true;
 }
@@ -770,7 +748,6 @@ function readUrl() {
   }
   if (!["all", ...TYPE_KEYS].includes(state.type)) state.type = "all";
   if (!SORTERS[state.sort]) state.sort = "relevance";
-  if (state.evidence !== "all" && !EVIDENCE_LABELS[state.evidence]) state.evidence = "all";
   if (params.has("id")) {
     state.activeId = params.get("id");
     state.userSelected = true;
@@ -820,9 +797,6 @@ function syncStateFromControls() {
   state.query = els.query.value.trim();
   state.department = els.department.value;
   state.area = els.area.value;
-  state.evidence = els.evidence.value;
-  state.verifiedOnly = els.verifiedOnly.checked;
-  state.recruiting = els.recruiting.value;
   state.sort = els.sort.value;
 }
 
@@ -830,11 +804,8 @@ function syncControls() {
   if (els.query.value.trim() !== state.query) els.query.value = state.query;
   els.department.value = state.department;
   els.area.value = state.area;
-  els.evidence.value = state.evidence;
-  els.verifiedOnly.checked = state.verifiedOnly;
-  els.recruiting.value = state.recruiting;
   els.sort.value = state.sort;
-  for (const select of [els.department, els.area, els.evidence, els.recruiting]) {
+  for (const select of [els.department, els.area]) {
     select.classList.toggle("is-set", select.value !== "all");
   }
   els.savedToggle.setAttribute("aria-pressed", String(state.savedOnly));
@@ -845,9 +816,6 @@ function activeFilterEntries() {
   if (state.savedOnly) entries.push(["savedOnly", "Saved", "only"]);
   if (state.department !== "all") entries.push(["department", "Dept", state.department]);
   if (state.area !== "all") entries.push(["area", "Area", state.area]);
-  if (state.evidence !== "all") entries.push(["evidence", "Evidence", EVIDENCE_LABELS[state.evidence]]);
-  if (state.verifiedOnly) entries.push(["verifiedOnly", "Data", "source checked"]);
-  if (state.recruiting !== "all") entries.push(["recruiting", "Status", state.recruiting]);
   return entries;
 }
 
@@ -1776,7 +1744,7 @@ function bindEvents() {
     debouncedUpdate();
   });
 
-  for (const control of [els.department, els.area, els.evidence, els.verifiedOnly, els.recruiting, els.sort]) {
+  for (const control of [els.department, els.area, els.sort]) {
     control.addEventListener("change", () => {
       syncStateFromControls();
       syncControls();

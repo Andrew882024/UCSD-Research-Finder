@@ -1295,18 +1295,14 @@ svg {
   margin-top: 14px;
 }
 
-.tag-list button {
+.tag-list span {
+  display: inline-flex;
+  align-items: center;
   height: 28px;
   padding: 0 10px;
   border: 1px solid var(--line);
   font-size: 12px;
   font-weight: 550;
-  transition: border-color 120ms, color 120ms;
-}
-
-.tag-list button:hover {
-  border-color: var(--accent);
-  color: var(--accent);
 }
 
 .keyword-list {

@@ -49,7 +49,6 @@ const DEFAULT_FILTERS = {
   query: "",
   type: "all",
   department: "all",
-  area: "all",
   savedOnly: false,
   sort: "relevance",
 };
@@ -59,7 +58,6 @@ const URL_KEYS = {
   query: "q",
   type: "type",
   department: "dept",
-  area: "area",
   savedOnly: "saved",
   sort: "sort",
 };
@@ -97,7 +95,6 @@ const els = {
   typeButtons: [...document.querySelectorAll("[data-type-choice]")],
   typeCounts: [...document.querySelectorAll("[data-count]")],
   department: document.querySelector("#departmentFilter"),
-  area: document.querySelector("#areaFilter"),
   sort: document.querySelector("#sortFilter"),
   clear: document.querySelector("#clearFilters"),
   filtersButton: document.querySelector("#filtersButton"),
@@ -662,7 +659,6 @@ function matchesFilters(record, indexed, terms) {
   const { facts } = record;
   if (state.savedOnly && !state.saved.has(record.id)) return false;
   if (state.department !== "all" && !record.departments.includes(state.department)) return false;
-  if (state.area !== "all" && !record.researchAreas.includes(state.area)) return false;
   if (terms.length && !terms.every((term) => indexed.haystack.includes(term))) return false;
   return true;
 }
@@ -788,26 +784,20 @@ function setSelectOptions(select, entries, allLabel, current) {
 
 function renderFacets() {
   setSelectOptions(els.department, countBy(state.records.flatMap((record) => record.departments)), "All departments", state.department);
-  setSelectOptions(els.area, countBy(state.records.flatMap((record) => record.researchAreas)), "All research areas", state.area);
   state.department = els.department.value;
-  state.area = els.area.value;
 }
 
 function syncStateFromControls() {
   state.query = els.query.value.trim();
   state.department = els.department.value;
-  state.area = els.area.value;
   state.sort = els.sort.value;
 }
 
 function syncControls() {
   if (els.query.value.trim() !== state.query) els.query.value = state.query;
   els.department.value = state.department;
-  els.area.value = state.area;
   els.sort.value = state.sort;
-  for (const select of [els.department, els.area]) {
-    select.classList.toggle("is-set", select.value !== "all");
-  }
+  els.department.classList.toggle("is-set", els.department.value !== "all");
   els.savedToggle.setAttribute("aria-pressed", String(state.savedOnly));
 }
 
@@ -815,7 +805,6 @@ function activeFilterEntries() {
   const entries = [];
   if (state.savedOnly) entries.push(["savedOnly", "Saved", "only"]);
   if (state.department !== "all") entries.push(["department", "Dept", state.department]);
-  if (state.area !== "all") entries.push(["area", "Area", state.area]);
   return entries;
 }
 
@@ -1220,11 +1209,7 @@ function detailOverview(record) {
   if (record.researchAreas.length) {
     tags = make("div", "tag-list");
     for (const area of record.researchAreas.slice(0, 14)) {
-      const tag = make("button", "", area);
-      tag.type = "button";
-      tag.dataset.areaFilter = area;
-      tag.title = `Filter by ${area}`;
-      tags.append(tag);
+      tags.append(make("span", "", area));
     }
   }
   let keywords = null;
@@ -1744,7 +1729,7 @@ function bindEvents() {
     debouncedUpdate();
   });
 
-  for (const control of [els.department, els.area, els.sort]) {
+  for (const control of [els.department, els.sort]) {
     control.addEventListener("change", () => {
       syncStateFromControls();
       syncControls();
@@ -1786,18 +1771,13 @@ function bindEvents() {
 
   // Delegated clicks: row titles, saved list, save toggles, tags, copy buttons.
   document.addEventListener("click", (event) => {
-    const target = event.target.closest("[data-open-id], [data-save-id], [data-area-filter], [data-search-keyword], [data-copy], [data-copy-record-link]");
+    const target = event.target.closest("[data-open-id], [data-save-id], [data-search-keyword], [data-copy], [data-copy-record-link]");
     if (!target) return;
     if (target.dataset.saveId) {
       toggleSaved(target.dataset.saveId);
     } else if (target.dataset.openId) {
       closeRail();
       openDetail(target.dataset.openId);
-    } else if (target.dataset.areaFilter) {
-      state.area = target.dataset.areaFilter;
-      syncControls();
-      closeSheet();
-      update({ scroll: true });
     } else if (target.dataset.searchKeyword) {
       state.query = target.dataset.searchKeyword;
       syncControls();

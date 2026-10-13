@@ -71,7 +71,7 @@ const RATING_SHORT = { rateMyPI: "PI Review", rateMyProfessors: "RMP" };
 
 // The department filter groups departments into broad fields. Records keep
 // their original department names everywhere else.
-const OTHER_FIELD = "Campus & Other";
+const OTHER_FIELD = "Other";
 const DEPARTMENT_FIELDS = {
   Biology: [
     "Biological Sciences",
@@ -81,17 +81,14 @@ const DEPARTMENT_FIELDS = {
     "Pharmacology",
     "Bioengineering",
   ],
-  Chemistry: ["Chemistry & Biochemistry", "Pharmacy and Pharmaceutical Sciences"],
-  "Physics & Astronomy": ["Physics", "Astronomy and Astrophysics"],
-  "Math & Data Science": ["Mathematics", "Halicioğlu Data Science Institute"],
-  "Engineering & Computing": [
-    "Computer Science and Engineering",
-    "Electrical and Computer Engineering",
-    "Mechanical & Aerospace Engineering",
-    "NanoEngineering",
-    "Structural Engineering",
-  ],
-  "Medicine & Health": [
+  Chemistry: ["Chemistry & Biochemistry", "Pharmacy and Pharmaceutical Sciences", "NanoEngineering"],
+  Physics: ["Physics", "Astronomy and Astrophysics"],
+  Mathematics: ["Mathematics"],
+  "Data Science": ["Halicioğlu Data Science Institute"],
+  "Computer Science": ["Computer Science and Engineering", "Electrical and Computer Engineering"],
+  "Mechanical Engineering": ["Mechanical & Aerospace Engineering"],
+  "Structural Engineering": ["Structural Engineering"],
+  Medicine: [
     "Medicine",
     "Pediatrics",
     "Psychiatry",
@@ -110,9 +107,9 @@ const DEPARTMENT_FIELDS = {
     "Anesthesiology",
     "Cardiology",
     "Obstetrics, Gynecology & Reproductive Sciences",
-    "Public Health",
   ],
-  "Earth & Ocean": ["Scripps Institution of Oceanography"],
+  "Public Health": ["Public Health"],
+  Oceanography: ["Scripps Institution of Oceanography"],
   "Social Sciences": [
     "Anthropology",
     "Cognitive Science",

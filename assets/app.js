@@ -164,7 +164,6 @@ const els = {
   filterCount: document.querySelector("#filterCount"),
   savedToggle: document.querySelector("#savedToggle"),
   savedCountTop: document.querySelector("#savedCountTop"),
-  shareButton: document.querySelector("#shareButton"),
   rail: document.querySelector("#filterRail"),
   railClose: document.querySelector("#railClose"),
   railApply: document.querySelector("#railApply"),
@@ -1272,19 +1271,6 @@ function detailHead(record) {
   save.dataset.saveId = record.id;
   save.setAttribute("aria-pressed", String(state.saved.has(record.id)));
   quick.append(save);
-  if (record.email) {
-    const mail = make("a", "line-button", "Email");
-    mail.href = `mailto:${record.email}`;
-    const copy = make("button", "line-button", "Copy email");
-    copy.type = "button";
-    copy.dataset.copy = record.email;
-    copy.dataset.copyLabel = `Copied ${record.email}`;
-    quick.append(mail, copy);
-  }
-  const share = make("button", "line-button", "Copy link");
-  share.type = "button";
-  share.dataset.copyRecordLink = record.id;
-  quick.append(share);
   head.append(quick);
   return head;
 }
@@ -1678,30 +1664,6 @@ function showToast(message) {
   toastTimer = window.setTimeout(() => els.toast.classList.remove("is-visible"), 1800);
 }
 
-async function copyText(value, message) {
-  try {
-    await navigator.clipboard.writeText(value);
-  } catch {
-    const field = make("textarea");
-    field.value = value;
-    field.setAttribute("readonly", "");
-    field.style.position = "fixed";
-    field.style.opacity = "0";
-    document.body.append(field);
-    field.select();
-    document.execCommand("copy");
-    field.remove();
-  }
-  showToast(message);
-}
-
-function recordLink(id) {
-  const url = new URL(window.location.href);
-  url.search = "";
-  url.searchParams.set("id", id);
-  return url.toString();
-}
-
 /* ---------- Hero numbers ---------- */
 
 function animateNumber(element, target) {
@@ -1813,7 +1775,6 @@ function bindEvents() {
     update({ scroll: true });
   });
 
-  els.shareButton.addEventListener("click", () => copyText(window.location.href, "Search link copied"));
   els.filtersButton.addEventListener("click", openRail);
   els.railClose.addEventListener("click", closeRail);
   els.railApply.addEventListener("click", closeRail);
@@ -1823,9 +1784,9 @@ function bindEvents() {
     closeRail();
   });
 
-  // Delegated clicks: row titles, saved list, save toggles, tags, copy buttons.
+  // Delegated clicks: row titles, saved list, save toggles, keyword buttons.
   document.addEventListener("click", (event) => {
-    const target = event.target.closest("[data-open-id], [data-save-id], [data-search-keyword], [data-copy], [data-copy-record-link]");
+    const target = event.target.closest("[data-open-id], [data-save-id], [data-search-keyword]");
     if (!target) return;
     if (target.dataset.saveId) {
       toggleSaved(target.dataset.saveId);
@@ -1837,10 +1798,6 @@ function bindEvents() {
       syncControls();
       closeSheet();
       update({ scroll: true });
-    } else if (target.dataset.copy) {
-      copyText(target.dataset.copy, target.dataset.copyLabel || "Copied");
-    } else if (target.dataset.copyRecordLink) {
-      copyText(recordLink(target.dataset.copyRecordLink), "Record link copied");
     }
   });
 

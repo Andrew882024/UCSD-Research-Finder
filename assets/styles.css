@@ -1914,8 +1914,7 @@ svg {
     height: 19px;
   }
 
-  .search-kbd,
-  #shareButton {
+  .search-kbd {
     display: none;
   }
 

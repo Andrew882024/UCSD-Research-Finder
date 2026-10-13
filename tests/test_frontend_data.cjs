@@ -14,6 +14,17 @@ const context = vm.createContext({
 vm.runInContext(fs.readFileSync(path.join(__dirname, '../assets/app.js'), 'utf8'), context);
 const evaluate = expression => vm.runInContext(expression, context);
 
+assert.deepEqual(
+  [...evaluate(`(() => {
+    const row = (name, recordType, score, ai) => ({ score, record: { displayName: name, recordType, aiLabScore: ai === undefined ? undefined : { score: ai } } });
+    const rows = [row("Low lab", "lab", 30, 20), row("Prof", "professor", 20), row("High lab", "lab", 10, 95), row("Unscored lab", "lab", 40)];
+    rows.sort(SORTERS.relevance);
+    orderLabsByAiScore(rows);
+    return rows.map((r) => r.record.displayName);
+  })()`)],
+  ['High lab', 'Low lab', 'Prof', 'Unscored lab'],
+  'labs follow AI lab score over text relevance and keep their slots among other record types',
+);
 assert.notEqual(
   evaluate('professorMergeKey({ displayName: "One Professor", email: "department@ucsd.edu" })'),
   evaluate('professorMergeKey({ displayName: "Another Professor", email: "department@ucsd.edu" })'),

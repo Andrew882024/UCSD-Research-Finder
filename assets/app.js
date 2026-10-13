@@ -766,6 +766,21 @@ const SORTERS = {
   sources: (a, b) => b.record.sourceUrls.length - a.record.sourceUrls.length || byName(a, b),
 };
 
+const aiLabScore = (record) => record.aiLabScore?.score ?? -1;
+
+// Under Relevance, labs are ordered by their AI lab score, even when searching. They
+// keep the slots relevance gave them, so professors and REAL records interleave as before.
+function orderLabsByAiScore(rows) {
+  const slots = [];
+  rows.forEach((row, i) => {
+    if (row.record.recordType === "lab") slots.push(i);
+  });
+  const labs = slots.map((i) => rows[i]).sort((a, b) => aiLabScore(b.record) - aiLabScore(a.record) || SORTERS.relevance(a, b));
+  slots.forEach((slot, i) => {
+    rows[slot] = labs[i];
+  });
+}
+
 // One pass computes the visible rows and the per-type counts under every other filter,
 // so the type tabs always show how many records each tab would reveal.
 function computeResults() {
@@ -781,6 +796,7 @@ function computeResults() {
     rows.push({ record, score: state.sort === "relevance" ? scoreRecord(record, indexed, terms) : 0 });
   });
   rows.sort(SORTERS[state.sort] || SORTERS.relevance);
+  if (state.sort === "relevance") orderLabsByAiScore(rows);
   return { records: rows.map((row) => row.record), counts, terms };
 }
 

@@ -69,6 +69,72 @@ const RATING_PLATFORMS = [
 ];
 const RATING_SHORT = { rateMyPI: "PI Review", rateMyProfessors: "RMP" };
 
+// The department filter groups departments into broad fields. Records keep
+// their original department names everywhere else.
+const OTHER_FIELD = "Campus & Other";
+const DEPARTMENT_FIELDS = {
+  Biology: [
+    "Biological Sciences",
+    "Biochemistry and Molecular Biophysics",
+    "Cellular & Molecular Medicine",
+    "Neurosciences",
+    "Pharmacology",
+  ],
+  Chemistry: ["Chemistry & Biochemistry", "Pharmacy and Pharmaceutical Sciences"],
+  "Physics & Astronomy": ["Physics", "Astronomy and Astrophysics"],
+  "Math & Data Science": ["Mathematics", "Halicioğlu Data Science Institute"],
+  "Engineering & Computing": [
+    "Computer Science and Engineering",
+    "Electrical and Computer Engineering",
+    "Mechanical & Aerospace Engineering",
+    "NanoEngineering",
+    "Bioengineering",
+    "Structural Engineering",
+  ],
+  "Medicine & Health": [
+    "Medicine",
+    "Pediatrics",
+    "Psychiatry",
+    "Pathology",
+    "Radiology",
+    "Radiation Medicine",
+    "Surgery",
+    "Neurological Surgery",
+    "Orthopaedic Surgery",
+    "Ophthalmology",
+    "Otolaryngology",
+    "Urology",
+    "Dermatology",
+    "Emergency Medicine",
+    "Family Medicine",
+    "Anesthesiology",
+    "Cardiology",
+    "Obstetrics, Gynecology & Reproductive Sciences",
+    "Public Health",
+  ],
+  "Earth & Ocean": ["Scripps Institution of Oceanography"],
+  "Social Sciences": [
+    "Anthropology",
+    "Cognitive Science",
+    "Communication",
+    "Economics",
+    "Education Studies",
+    "Ethnic Studies",
+    "Linguistics",
+    "Political Science",
+    "Psychology",
+    "Sociology",
+    "Urban Studies & Planning",
+    "Global Policy and Strategy",
+  ],
+  "Arts & Humanities": ["History", "Literature", "Music", "Philosophy", "Theatre & Dance", "Visual Arts"],
+  Business: ["Rady School of Management"],
+};
+const FIELD_ORDER = [...Object.keys(DEPARTMENT_FIELDS), OTHER_FIELD];
+const FIELD_BY_DEPARTMENT = new Map(Object.entries(DEPARTMENT_FIELDS).flatMap(([field, departments]) => (
+  departments.map((department) => [normalize(department), field])
+)));
+
 const media = (query) => window.matchMedia(query);
 const DESKTOP_DETAIL_QUERY = media("(min-width: 1280px)");
 const DRAWER_QUERY = media("(max-width: 899px)");
@@ -309,6 +375,13 @@ function departmentNames(record) {
   ]);
 }
 
+// REAL organizations are campus units, not academic departments.
+function departmentFields(record) {
+  if (record.recordType === "resource") return [OTHER_FIELD];
+  const fields = new Set(record.departments.map((department) => FIELD_BY_DEPARTMENT.get(normalize(department))).filter(Boolean));
+  return fields.size ? [...fields] : [OTHER_FIELD];
+}
+
 function dateLabel(value) {
   if (!isKnown(value)) return "Not checked";
   if (/^\d{4}-\d{2}-\d{2}$/.test(String(value))) return String(value);
@@ -493,7 +566,9 @@ function buildRecords(data, realPortalData = null) {
     recruitingEvidence: { text: "", url: "" },
   }));
 
-  return [...professors, ...labs, ...resources];
+  const records = [...professors, ...labs, ...resources];
+  for (const record of records) record.fields = departmentFields(record);
+  return records;
 }
 
 function professorMergeKey(record) {
@@ -658,7 +733,7 @@ function compileTerms() {
 function matchesFilters(record, indexed, terms) {
   const { facts } = record;
   if (state.savedOnly && !state.saved.has(record.id)) return false;
-  if (state.department !== "all" && !record.departments.includes(state.department)) return false;
+  if (state.department !== "all" && !record.fields.includes(state.department)) return false;
   if (terms.length && !terms.every((term) => indexed.haystack.includes(term))) return false;
   return true;
 }
@@ -783,7 +858,9 @@ function setSelectOptions(select, entries, allLabel, current) {
 }
 
 function renderFacets() {
-  setSelectOptions(els.department, countBy(state.records.flatMap((record) => record.departments)), "All departments", state.department);
+  const fieldCounts = new Map(countBy(state.records.flatMap((record) => record.fields)));
+  const fields = FIELD_ORDER.filter((field) => fieldCounts.has(field)).map((field) => [field, fieldCounts.get(field)]);
+  setSelectOptions(els.department, fields, "All departments", state.department);
   state.department = els.department.value;
 }
 

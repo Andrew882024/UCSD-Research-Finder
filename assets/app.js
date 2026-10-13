@@ -758,13 +758,28 @@ function ratingSortValue(record) {
 const byName = (a, b) => a.record.displayName.localeCompare(b.record.displayName);
 const SORTERS = {
   relevance: (a, b) => b.score - a.score || byName(a, b),
-  name: byName,
-  department: (a, b) => (a.record.departments[0] || "").localeCompare(b.record.departments[0] || "") || byName(a, b),
   courses: (a, b) => b.record.facts.courses - a.record.facts.courses || byName(a, b),
   rating: (a, b) => ratingSortValue(b.record) - ratingSortValue(a.record) || byName(a, b),
-  citations: (a, b) => b.record.facts.metrics.citationCount - a.record.facts.metrics.citationCount || byName(a, b),
   sources: (a, b) => b.record.sourceUrls.length - a.record.sourceUrls.length || byName(a, b),
 };
+
+// Each record type offers only the sorts that are meaningful for it.
+const SORT_LABELS = { relevance: "Relevance", courses: "Courses", rating: "Rating", sources: "Sources" };
+const SORTS_BY_TYPE = {
+  all: ["relevance"],
+  lab: ["relevance", "sources"],
+  professor: ["relevance", "courses", "rating"],
+  resource: ["relevance"],
+};
+const sortsForType = () => SORTS_BY_TYPE[state.type] || ["relevance"];
+
+function renderSortOptions() {
+  const sorts = sortsForType();
+  if ([...els.sort.options].map((option) => option.value).join() !== sorts.join()) {
+    els.sort.replaceChildren(...sorts.map((key) => new Option(SORT_LABELS[key], key)));
+  }
+  els.sort.value = state.sort;
+}
 
 const aiLabScore = (record) => record.aiLabScore?.score ?? -1;
 
@@ -831,7 +846,7 @@ function readUrl() {
     state[key] = typeof DEFAULT_FILTERS[key] === "boolean" ? value === "1" : value;
   }
   if (!["all", ...TYPE_KEYS].includes(state.type)) state.type = DEFAULT_FILTERS.type;
-  if (!SORTERS[state.sort]) state.sort = "relevance";
+  if (!sortsForType().includes(state.sort)) state.sort = "relevance";
   if (params.has("id")) {
     state.activeId = params.get("id");
     state.userSelected = true;
@@ -886,7 +901,7 @@ function syncStateFromControls() {
 function syncControls() {
   if (els.query.value.trim() !== state.query) els.query.value = state.query;
   els.department.value = state.department;
-  els.sort.value = state.sort;
+  renderSortOptions();
   els.department.classList.toggle("is-set", els.department.value !== "all");
   els.savedToggle.setAttribute("aria-pressed", String(state.savedOnly));
 }
@@ -1830,6 +1845,8 @@ function bindEvents() {
   els.typeButtons.forEach((button) => {
     button.addEventListener("click", () => {
       state.type = button.dataset.typeChoice || "all";
+      if (!sortsForType().includes(state.sort)) state.sort = "relevance";
+      syncControls();
       update({ scroll: true });
     });
   });

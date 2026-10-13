@@ -263,14 +263,6 @@ function formatNumber(value) {
   return Number(value || 0).toLocaleString("en-US");
 }
 
-function slugLabel(value) {
-  return String(value || "")
-    .split(/[\s_-]+/)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
 function cleanText(value) {
   return String(value || "")
     .replace(/<[^>]*>/g, " ")
@@ -1416,7 +1408,7 @@ function ratingDetails(record) {
 
 function labAffiliationDetails(record) {
   const affiliations = record.labAffiliations || [];
-  if (!affiliations.length) return detailSection("Labs & research groups", note("No lab relationship has been reverified for this professor yet."));
+  if (!affiliations.length) return null;
   const relationLabels = {
     faculty_lab_link: "Lab linked from faculty profile",
     official_directory_same_record: "Listed together in official directory",
@@ -1440,12 +1432,8 @@ function labAffiliationDetails(record) {
 }
 
 function academicDetails(record) {
-  const { verified, hasMetrics, status, profile } = record.facts.metrics;
-  if (!verified) {
-    return detailSection("Academic metrics", note(hasMetrics
-      ? `${status}. Citation numbers are hidden because the publication match needs review.`
-      : "Citation metrics are not verified in the local metadata yet."));
-  }
+  const { verified, status, profile } = record.facts.metrics;
+  if (!verified) return null;
   const grid = make("dl", "metric-grid");
   for (const [label, value] of [["Citations", profile.citationCount], ["Works", profile.worksCount], ["h-index", profile.hIndex], ["i10-index", profile.i10Index]]) {
     const cell = make("div", numericMetric(value) ? "" : "is-empty");
@@ -1523,46 +1511,6 @@ function detailFields(record) {
   return detailSection("REAL Portal details", fieldGrid(fields));
 }
 
-function detailRecruitment(record) {
-  const evidence = record.recruitingEvidence || {};
-  const status = record.recruitingStatus || UNKNOWN;
-  const body = isKnown(evidence.text)
-    ? make("p", "", `${status}: “${cleanText(evidence.text)}”`)
-    : make("p", "", status === UNKNOWN
-      ? "No explicit public recruiting statement was captured. That doesn’t mean the group is closed — a short, specific email is usually the best way to ask."
-      : status);
-  const link = isKnown(evidence.url) ? makeExternal("View evidence source", evidence.url, "inline-link") : null;
-  return detailSection("Recruiting", body, link);
-}
-
-function verificationDetails(record) {
-  const parts = [note(`${verificationLabel(record)}. Last source attempt: ${dateLabel(record.verification?.lastAttemptedAt)}. Each item applies only to the named field.`)];
-  const issues = record.verification?.issues || [];
-  if (issues.length) {
-    parts.push(make("p", "rating-warn", issues.map((issue) => typeof issue === "string" ? issue : (issue.message || issue.reason || issue.code || "Review needed")).join(" · ")));
-  }
-  const list = make("ul", "evidence-list");
-  for (const [key, items] of evidenceFields(record)) {
-    for (const evidence of items) {
-      if (!evidence.sourceUrl || !evidence.observedAt) continue;
-      list.append(evidenceItem(
-        slugLabel(key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/\./g, " ")),
-        dateLabel(evidence.observedAt),
-        evidence.evidence || evidence.text || "",
-        [["Field source", evidence.sourceUrl]],
-      ));
-    }
-  }
-  if (list.children.length) {
-    const details = make("details", "candidate-details");
-    details.append(make("summary", "", `Field evidence (${list.children.length})`), list);
-    parts.push(details);
-  } else {
-    parts.push(note("No field-level evidence recorded. Existing source links and legacy dates do not establish that this entry was reverified."));
-  }
-  return detailSection("Verification", ...parts);
-}
-
 function detailSources(record) {
   const section = make("section", "detail-section");
   const details = make("details", "source-details");
@@ -1594,8 +1542,7 @@ function renderDetail(record) {
     );
   }
   sections.push(detailFields(record));
-  if (record.recordType !== "resource") sections.push(detailRecruitment(record));
-  sections.push(verificationDetails(record), detailSources(record));
+  sections.push(detailSources(record));
   root.append(...sections.filter(Boolean));
   return root;
 }

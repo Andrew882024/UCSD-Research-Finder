@@ -559,10 +559,21 @@ def apply_lab_expansion(data, expansion):
     return skipped
 
 
-def build(data, lab_evidence, teaching, ratings, source_checks, faculty_evidence=None, lab_review=None, lab_expansion=None):
+def apply_lab_ai_scores(data, lab_ai_scores):
+    """Attach Gemini lab-likeness scores; a score only applies to the URL it was given for."""
+    scores = lab_ai_scores.get("byLabId", {})
+    for lab in data["labs"]:
+        lab.pop("aiLabScore", None)
+        entry = scores.get(lab["id"])
+        if entry and url_key(entry["url"]) == url_key(lab["labWebsiteUrl"]):
+            lab["aiLabScore"] = {k: entry[k] for k in ["score", "category", "reason", "retrievalStatus", "model", "observedAt"] if k in entry}
+
+
+def build(data, lab_evidence, teaching, ratings, source_checks, faculty_evidence=None, lab_review=None, lab_expansion=None, lab_ai_scores=None):
     faculty_evidence = faculty_evidence or {}
     lab_review = lab_review or {}
     lab_expansion = lab_expansion or {}
+    lab_ai_scores = lab_ai_scores or {}
     before = profile(data)
     changes, quarantine = clean_legacy(data)
     by_id = {p["id"]: p for p in data["professors"]}
@@ -704,6 +715,7 @@ def build(data, lab_evidence, teaching, ratings, source_checks, faculty_evidence
                 affiliation["labId"] = target["id"]
                 if affiliation.get("fieldEvidence") and record["id"] in by_id:
                     target["professorIds"] = list(dict.fromkeys(target.get("professorIds", []) + [record["id"]]))
+    apply_lab_ai_scores(data, lab_ai_scores)
     data["schemaVersion"] = "3.0.0"
     stamps = [p.get("generatedAt") for p in [lab_evidence, teaching, ratings, source_checks, faculty_evidence, lab_review, lab_expansion] if p.get("generatedAt")]
     data["generatedAt"] = max(stamps, default=data["generatedAt"])
@@ -774,7 +786,7 @@ def main():
         return value
     atlas, report, changes, quarantine = build(json.loads(args.atlas.read_text()), read("lab-evidence.json"),
                                               read("teaching-evidence.json"), read("ratings-evidence.json"), read("source-checks.json"), read("faculty-evidence.json"), read("lab-identity-review.json"),
-                                              read("lab-expansion-review.json"))
+                                              read("lab-expansion-review.json"), read("lab-ai-scores.json"))
     from validate_data import validate_professor, validate_lab, validate_references
     ids = set()
     for kind, validate in [("professors", validate_professor), ("labs", validate_lab)]:

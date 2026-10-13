@@ -557,6 +557,19 @@
           "items": {
             "type": "string"
           }
+        },
+        "aiLabScore": {
+          "type": "object",
+          "description": "Gemini's 0-100 judgment of whether labWebsiteUrl is a lab site: 75-100 lab, 50-74 maybe, 25-49 not a lab, 0-24 unreachable. From data/ucsd/lab-ai-scores.json.",
+          "required": ["score", "category"],
+          "properties": {
+            "score": { "type": "integer", "minimum": 0, "maximum": 100 },
+            "category": { "enum": ["lab", "maybe_lab", "not_lab", "unreachable"] },
+            "reason": { "type": "string" },
+            "retrievalStatus": { "type": ["string", "null"] },
+            "model": { "type": "string" },
+            "observedAt": { "type": "string" }
+          }
         }
       }
     },

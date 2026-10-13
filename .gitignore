@@ -2,3 +2,5 @@ data/ucsd/physical-sciences-site-cache.json
 __pycache__/
 *.pyc
 .cache/
+
+.env
